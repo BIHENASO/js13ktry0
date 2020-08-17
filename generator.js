@@ -68,95 +68,188 @@ function generateMaze( size, difficulty) {
 	}
 }
 
-function paintMaze(canvas) {
-	if (w/(maze.length+1) > h/(maze[0].length+1)) {
-		step = h/(maze[0].length+1);
-		x_pad = (w - (maze.length+1)*step)/2;
+function paintSquare(g, x, y, w, h, b) {	
+	g.beginPath();
+	g.moveTo(x+b,y+h/2);
+	g.lineTo(x+w/2,y+b);
+	g.lineTo(x+w-b,y+h/2);
+	g.lineTo(x+w/2,y+h-b);
+	g.lineTo(x+b,y+h/2);
+	g.stroke();
+}
+
+function paintGoal(g, x, y, w, h, b) {
+	g.fillStyle = "rgba(255,255,0,0.7)";
+	
+	var count = 80 + Math.floor(Math.random()*20);
+	var cur_r;
+	var cur_x;
+	var cur_y;
+	for (var i = 0; i < count; i++) {
+		cur_r = 0.1*step + Math.random()*step*0.2;
+		cur_x = Math.floor(Math.random()*w);
+		if (cur_x > w/2) {
+			cur_y = (cur_x-w/2)/(w/h) + Math.floor(Math.random()*((w-cur_x)/(w/h))*2);
+		} else {
+			cur_y = (w/2-cur_x)/(w/h) + Math.floor(Math.random()*(cur_x/(w/h))*2);
+		}
+		g.beginPath();
+		g.arc(x+cur_x, y+cur_y, cur_r, 0, 2*Math.PI);
+		g.fill();
+	}
+}
+
+function paintPlayer(g, x, y, w, h, b) {
+	g.fillStyle = "rgba(255,255,0,0.5)";
+	g.beginPath();
+	g.moveTo(x+b,y+h*0.75);
+	g.lineTo(x+w/2,y+h/2+b);
+	g.lineTo(x+w-b,y+h*0.75);
+	g.lineTo(x+w/2,y+h-b);
+	g.fill();
+	
+	g.fillStyle = "rgba(255,0,0,0.5)";
+	g.moveTo(x+b,y+h*0.75);
+	g.lineTo(x+w/2,y+b);
+	g.lineTo(x+w/2,y+h-b);
+	g.fill();
+	
+	g.fillStyle = "rgba(255,0,255,0.5)";
+	g.moveTo(x+w-b,y+h*0.75);
+	g.lineTo(x+w/2,y+b);
+	g.lineTo(x+w/2,y+h-b);
+	g.fill();
+	
+	g.fillStyle = lg;
+}
+
+function paintPrep(canvas) {
+	if (w/((maze.length+maze[0].length+2)*2) > h/(maze.length+maze[0].length+2)) {
+		step = h/(maze.length+maze[0].length+2);
+		x_pad = (w - ((maze.length+maze[0].length+2)*2)*step)/2;
 		y_pad = 0;
 	} else {
-		step = w/(maze.length+1); 
+		step = w/((maze.length+maze[0].length+2)*2); 
 		x_pad = 0;
-		y_pad = (h - (maze[0].length+1)*step)/2;
+		y_pad = (h - (maze.length+maze[0].length+2)*step)/2;
 	}
-	border = 1;
+	border = step/10;
 	
-	var g = canvas.getContext("2d");
-	g.font = (step*0.9) + "px sans-serif";
-	g.textAlign = "left";
-	g.textBaseline = "top";
+	g = canvas.getContext("2d");
+	g.font = (step*1.5) + "px sans-serif";
+	g.textAlign = "center";
+	g.textBaseline = "middle";
 	
-	g.fillStyle = "#FF0000";
+	g.lineWidth = border;
+	lg = g.createLinearGradient(x_pad,y_pad,w-x_pad,h-y_pad);
+	lg.addColorStop(0, '#FFFFFF');
+	lg.addColorStop(0.05, '#FFFF00');
+	lg.addColorStop(0.11, '#00FF00');
+	lg.addColorStop(0.16, '#00FFFF');
+	lg.addColorStop(0.22, '#0000FF');
+	lg.addColorStop(0.27, '#606060');
+	lg.addColorStop(0.33, '#FFFFFF');
+	lg.addColorStop(0.38, '#FFFF00');
+	lg.addColorStop(0.44, '#00FF00');
+	lg.addColorStop(0.49, '#00FFFF');
+	lg.addColorStop(0.55, '#0000FF');
+	lg.addColorStop(0.60, '#606060');
+	lg.addColorStop(0.66, '#FFFFFF');
+	lg.addColorStop(0.71, '#FFFF00');
+	lg.addColorStop(0.77, '#00FF00');
+	lg.addColorStop(0.82, '#00FFFF');
+	lg.addColorStop(0.88, '#0000FF');
+	lg.addColorStop(0.93, '#606060');
+	lg.addColorStop(0.99, '#FFFFFF');
+	g.strokeStyle = lg;
+	g.fillStyle = lg;
+}
+
+function paintMaze() {
+	g.clearRect(0,0,w,h);
 	var x;
-	var y = y_pad;
+	var y;
 	for (var i = 0; i < maze.length; i++) {
-		x = (i+1.25)*step+border+x_pad;
+		x = (2.3 + i*2) * step + x_pad;
+		y = (3.4 + i + (maze[0].length)) * step + y_pad;
 		g.fillText(i, x, y);
 	}
 	x = x_pad + step*0.25;
 	for (var j = 0; j < maze[0].length; j++) {
-		y = (j+1)*step+border+y_pad;
+		x = (2.1 + 2*j) * step + x_pad;
+		y = (1.1 + (maze[0].length - j)) * step + y_pad;
 		g.fillText(j, x, y);
 	}
 	
 	for (var i = 0; i < maze.length; i++) {
 		for (var j = 0; j < maze[0].length; j++) {
-			x = (i+1)*step+border+x_pad;
-			y = (j+1)*step+border+y_pad;
+			x = (2.1 + i*2 + 2*j) * step + x_pad;
+			y = (1.1 + i + (maze[0].length - j)) * step + y_pad;
 			
-			if (i === player.x && j === player.y) {
-				g.fillStyle = "#00FF00";
-			} else if (maze[i][j].control === "goal") {
-				g.fillStyle = "#FFFF00";	
+			if (maze[i][j].control === "goal") {
+				g.lineWidth = border*2;
+				g.strokeStyle = "#FFFF00";
+				g.fillStyle = "#FFFF00";
+				paintSquare(g, x, y, 4*step, 2*step, border);
+				g.lineWidth = border;
+				paintGoal(g, x, y, 4*step, 2*step, border);
+				g.fillStyle = lg;
+				g.strokeStyle = lg;
 			} else if (maze[i][j].control === "BL") {
-				g.fillStyle = "#000000";	
+				g.strokeStyle = "#2F2F2F";
+				g.fillStyle = "#2F2F2F";
+				paintSquare(g, x, y, 4*step, 2*step, border);
+				g.fillText(maze[i][j].x + "" + maze[i][j].y, x+step*2, y+step*1.1);
+				g.fillStyle = lg;
+				g.strokeStyle = lg;
 			} else {
-				g.fillStyle = "#FF0000";
+				paintSquare(g, x, y, 4*step, 2*step, border);
+				g.fillText(maze[i][j].x + "" + maze[i][j].y, x+step*2, y+step*1.1);
 			}
-			g.fillRect(x, y, step-2*border, step-2*border);
-			
-			g.fillStyle = "#0000FF";
-			g.fillText(maze[i][j].x + "" + maze[i][j].y, x, y);
 		}
 	}
+	x = (2.1 + player.x*2 + 2*player.y) * step + x_pad;
+	y = (1.1 + player.x + (maze[0].length - player.y)) * step + y_pad;
+	paintPlayer(g, x, y-2*step, 4*step, 4*step, border);
 };
 
 function keypress(event) {
 	var flag = false;
-	if (event.key === "w") {
+	if (event.key === "a") {
 		if (maze[player.x][player.y-1]) {
 			if (maze[player.x][player.y-1].control === "404" || maze[player.x][player.y-1].control === "BL") {
 				maze[player.x][player.y-1].control = "BL";
-				paintMaze(canvas);
+				paintMaze();
 			} else {
 				player.y -= 1;
 				flag = true;
 			}
 		}
-	} else if (event.key === "s") {
+	} else if (event.key === "d") {
 		if (maze[player.x][player.y+1]) {
 			if (maze[player.x][player.y+1].control === "404" || maze[player.x][player.y+1].control === "BL") {
 				maze[player.x][player.y+1].control = "BL";
-				paintMaze(canvas);
+				paintMaze();
 			} else {
 				player.y += 1;
 				flag = true;
 			}
 		}
-	} else if (event.key === "a") {
+	} else if (event.key === "w") {
 		if (maze[player.x-1]) {
 			if (maze[player.x-1][player.y].control === "404" || maze[player.x-1][player.y].control === "BL") {
 				maze[player.x-1][player.y].control = "BL";
-				paintMaze(canvas);
+				paintMaze();
 			} else {
 				player.x -= 1;
 				flag = true;
 			}
 		}
-	} else if (event.key === "d") {
+	} else if (event.key === "s") {
 		if (maze[player.x+1]) {
 			if (maze[player.x+1][player.y].control === "404" || maze[player.x+1][player.y].control === "BL") {
 				maze[player.x+1][player.y].control = "BL";
-				paintMaze(canvas);
+				paintMaze();
 			} else {
 				player.x += 1;
 				flag = true;
@@ -164,7 +257,7 @@ function keypress(event) {
 		}
 	}
 	if (flag) {
-		paintMaze(canvas);
+		paintMaze();
 		var pos = maze[player.x][player.y];
 		if (pos.control === "goal") {
 			window.location.reload();
@@ -175,7 +268,7 @@ function keypress(event) {
 		if (pos.control === "goal") {
 			window.location.reload();
 		}
-		paintMaze(canvas);
+		paintMaze();
 	}
 }
 
@@ -183,8 +276,9 @@ window.onload = function() {
 	canvas = document.getElementById("MVLM_canvas");
 	canvas.width = w;
 	canvas.height = h;
-	generateMaze({x:6, y:8}, 8);
-	paintMaze(canvas, maze);
+	generateMaze({x:9, y:8}, 8);
+	paintPrep(canvas);
+	paintMaze();
 	
 	document.onkeypress = keypress;
 }

@@ -4,6 +4,41 @@ var h = window.innerHeight;
 var maze;
 var player;
 
+var lastFrame = Date.now();
+
+var audioContext = new window.AudioContext();
+var oscillators = [];
+var gains = [];
+for (var i = 0; i < 4; i++) {
+	oscillators.push( audioContext.createOscillator() );
+	gains.push( audioContext.createGain() );
+	oscillators[i].connect(gains[i]);
+	oscillators[i].start();
+}
+oscillators[0].type = 'sine';
+oscillators[1].type = 'square';
+oscillators[2].type = 'triangle';
+oscillators[3].type = 'sawtooth';
+
+function playWave( no) {
+	var now = audioContext.currentTime;
+	gains[no].gain.setValueAtTime(1, now);
+	gains[no].gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+	gains[no].connect(audioContext.destination);
+	window.setTimeout(function() {
+		gains[no].disconnect();
+	},200);
+}
+
+function animate() {
+	var curFrame = Date.now();
+	if (curFrame - lastFrame > 16) {
+		paintMaze();
+		lastFrame = curFrame;
+	}
+	window.requestAnimationFrame(animate);
+}
+
 function generateMaze( size, difficulty) {
 	maze = [];
 	for (var i = 0; i < size.x; i++) {
@@ -100,7 +135,11 @@ function paintGoal(g, x, y, w, h, b) {
 }
 
 function paintPlayer(g, x, y, w, h, b) {
-	g.fillStyle = "rgba(255,255,0,0.5)";
+	var curFrame = Date.now() % 511;
+	if (curFrame >= 256) {
+		curFrame = 511 - 256;
+	}
+	g.fillStyle = "rgba("+curFrame+","+curFrame+",0,0.5)";
 	g.beginPath();
 	g.moveTo(x+b,y+h*0.75);
 	g.lineTo(x+w/2,y+h/2+b);
@@ -108,13 +147,13 @@ function paintPlayer(g, x, y, w, h, b) {
 	g.lineTo(x+w/2,y+h-b);
 	g.fill();
 	
-	g.fillStyle = "rgba(255,0,0,0.5)";
+	g.fillStyle = "rgba("+curFrame+",0,0,0.5)";
 	g.moveTo(x+b,y+h*0.75);
 	g.lineTo(x+w/2,y+b);
 	g.lineTo(x+w/2,y+h-b);
 	g.fill();
 	
-	g.fillStyle = "rgba(255,0,255,0.5)";
+	g.fillStyle = "rgba("+curFrame+",0,"+curFrame+",0.5)";
 	g.moveTo(x+w-b,y+h*0.75);
 	g.lineTo(x+w/2,y+b);
 	g.lineTo(x+w/2,y+h-b);
@@ -199,7 +238,7 @@ function paintMaze() {
 				g.strokeStyle = "#2F2F2F";
 				g.fillStyle = "#2F2F2F";
 				paintSquare(g, x, y, 4*step, 2*step, border);
-				g.fillText(maze[i][j].x + "" + maze[i][j].y, x+step*2, y+step*1.1);
+				g.fillText(404, x+step*2, y+step*1.1);
 				g.fillStyle = lg;
 				g.strokeStyle = lg;
 			} else {
@@ -214,11 +253,13 @@ function paintMaze() {
 };
 
 function keypress(event) {
+	audioContext.resume();
 	var flag = false;
 	if (event.key === "a") {
 		if (maze[player.x][player.y-1]) {
 			if (maze[player.x][player.y-1].control === "404" || maze[player.x][player.y-1].control === "BL") {
 				maze[player.x][player.y-1].control = "BL";
+				playWave(3);
 				paintMaze();
 			} else {
 				player.y -= 1;
@@ -229,6 +270,7 @@ function keypress(event) {
 		if (maze[player.x][player.y+1]) {
 			if (maze[player.x][player.y+1].control === "404" || maze[player.x][player.y+1].control === "BL") {
 				maze[player.x][player.y+1].control = "BL";
+				playWave(3);
 				paintMaze();
 			} else {
 				player.y += 1;
@@ -239,6 +281,7 @@ function keypress(event) {
 		if (maze[player.x-1]) {
 			if (maze[player.x-1][player.y].control === "404" || maze[player.x-1][player.y].control === "BL") {
 				maze[player.x-1][player.y].control = "BL";
+				playWave(3);
 				paintMaze();
 			} else {
 				player.x -= 1;
@@ -249,6 +292,7 @@ function keypress(event) {
 		if (maze[player.x+1]) {
 			if (maze[player.x+1][player.y].control === "404" || maze[player.x+1][player.y].control === "BL") {
 				maze[player.x+1][player.y].control = "BL";
+				playWave(3);
 				paintMaze();
 			} else {
 				player.x += 1;
@@ -260,14 +304,23 @@ function keypress(event) {
 		paintMaze();
 		var pos = maze[player.x][player.y];
 		if (pos.control === "goal") {
-			window.location.reload();
+			playWave(1);
+			window.setTimeout(function(){
+				window.location.reload();
+			}, 500);
+			return;
 		}
 		player.x = pos.x;
 		player.y = pos.y;
 		var pos = maze[player.x][player.y];
 		if (pos.control === "goal") {
-			window.location.reload();
+			playWave(1);
+			window.setTimeout(function(){
+				window.location.reload();
+			}, 500);
+			return;
 		}
+		playWave(2);
 		paintMaze();
 	}
 }
@@ -281,4 +334,6 @@ window.onload = function() {
 	paintMaze();
 	
 	document.onkeypress = keypress;
+	
+	window.requestAnimationFrame(animate);
 }

@@ -9,11 +9,13 @@ var lastFrame = Date.now();
 var audioContext = new window.AudioContext();
 var oscillators = [];
 var gains = [];
+var timeouts = [];
 for (var i = 0; i < 4; i++) {
 	oscillators.push( audioContext.createOscillator() );
 	gains.push( audioContext.createGain() );
 	oscillators[i].connect(gains[i]);
 	oscillators[i].start();
+	timeouts.push(null);
 }
 oscillators[0].type = 'sine';
 oscillators[1].type = 'square';
@@ -21,13 +23,17 @@ oscillators[2].type = 'triangle';
 oscillators[3].type = 'sawtooth';
 
 function playWave( no) {
+	if (timeouts[i]) {
+		window.clearTimeout(timeouts[i]);
+		timeouts[i] = null;
+	}
 	var now = audioContext.currentTime;
 	gains[no].gain.setValueAtTime(1, now);
 	gains[no].gain.exponentialRampToValueAtTime(0.001, now + 0.5);
 	gains[no].connect(audioContext.destination);
-	window.setTimeout(function() {
+	timeouts[i] = window.setTimeout(function() {
 		gains[no].disconnect();
-	},200);
+	},500);
 }
 
 function animate() {
@@ -114,7 +120,22 @@ function paintSquare(g, x, y, w, h, b) {
 }
 
 function paintGoal(g, x, y, w, h, b) {
-	g.fillStyle = "rgba(255,255,0,0.7)";
+	var curFrame = Date.now() % 767;
+	if (curFrame >= 384) {
+		curFrame = 767 - curFrame;
+	}
+	curFrame = Math.floor(curFrame*0.67);
+	g.fillStyle = "rgba("+curFrame+","+curFrame+",0,0.5)";
+	
+	g.beginPath();
+	g.moveTo(x+6*b,y+h/2);
+	g.lineTo(x+w/2,y+3*b);
+	g.lineTo(x+w-6*b,y+h/2);
+	g.lineTo(x+w/2,y+h-3*b);
+	g.lineTo(x+6*b,y+h/2);
+	g.fill();
+	
+	/*g.fillStyle = "rgba(255,255,0,0.7)";
 	
 	var count = 80 + Math.floor(Math.random()*20);
 	var cur_r;
@@ -131,13 +152,13 @@ function paintGoal(g, x, y, w, h, b) {
 		g.beginPath();
 		g.arc(x+cur_x, y+cur_y, cur_r, 0, 2*Math.PI);
 		g.fill();
-	}
+	}*/
 }
 
 function paintPlayer(g, x, y, w, h, b) {
 	var curFrame = Date.now() % 511;
 	if (curFrame >= 256) {
-		curFrame = 511 - 256;
+		curFrame = 511 - curFrame;
 	}
 	g.fillStyle = "rgba("+curFrame+","+curFrame+",0,0.5)";
 	g.beginPath();

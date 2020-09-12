@@ -283,6 +283,7 @@ function restart() {
 function keyup(event) {
 	audioContext.resume();
 	var flag = false;
+	console.log(event.keyCode);
 	if (event.keyCode === 65 || event.keyCode === 37) {
 		if (maze[player.x][player.y-1]) {
 			if (maze[player.x][player.y-1].control === "404" || maze[player.x][player.y-1].control === "BL") {
@@ -326,8 +327,8 @@ function keyup(event) {
 	} else if (event.keyCode === 82) {
 		playWave(0);
 		restart();
-	} else if (event.keyCode >= 51 && event.keyCode <= 57) {
-		diff = event.keyCode - 48;
+	} else if (event.keyCode >= 51 && event.keyCode <= 57 || event.keyCode >= 99 && event.keyCode <= 105) {
+		diff = event.keyCode % 48;
 		playWave(0);
 		window.setTimeout(function(){
 			generateMaze({x:diff, y:diff}, diff);

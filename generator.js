@@ -46,7 +46,7 @@ function animate() {
 }
 
 function generateMaze( size, difficulty) {
-	maze = [];
+	maze = []; 
 	for (var i = 0; i < size.x; i++) {
 		maze.push([]);
 		for (var j = 0; j < size.y; j++) {
@@ -281,7 +281,6 @@ function keypress(event) {
 			if (maze[player.x][player.y-1].control === "404" || maze[player.x][player.y-1].control === "BL") {
 				maze[player.x][player.y-1].control = "BL";
 				playWave(3);
-				paintMaze();
 			} else {
 				player.y -= 1;
 				flag = true;
@@ -292,7 +291,6 @@ function keypress(event) {
 			if (maze[player.x][player.y+1].control === "404" || maze[player.x][player.y+1].control === "BL") {
 				maze[player.x][player.y+1].control = "BL";
 				playWave(3);
-				paintMaze();
 			} else {
 				player.y += 1;
 				flag = true;
@@ -303,7 +301,6 @@ function keypress(event) {
 			if (maze[player.x-1][player.y].control === "404" || maze[player.x-1][player.y].control === "BL") {
 				maze[player.x-1][player.y].control = "BL";
 				playWave(3);
-				paintMaze();
 			} else {
 				player.x -= 1;
 				flag = true;
@@ -314,20 +311,23 @@ function keypress(event) {
 			if (maze[player.x+1][player.y].control === "404" || maze[player.x+1][player.y].control === "BL") {
 				maze[player.x+1][player.y].control = "BL";
 				playWave(3);
-				paintMaze();
 			} else {
 				player.x += 1;
 				flag = true;
 			}
 		}
+	} else if (event.key === "r") {
+		playWave(0);
+		window.setTimeout(function(){
+			generateMaze({x:8, y:8}, 8);
+		}, 500);
 	}
 	if (flag) {
-		paintMaze();
 		var pos = maze[player.x][player.y];
 		if (pos.control === "goal") {
 			playWave(1);
 			window.setTimeout(function(){
-				window.location.reload();
+				generateMaze({x:8, y:8}, 8);
 			}, 500);
 			return;
 		}
@@ -337,12 +337,11 @@ function keypress(event) {
 		if (pos.control === "goal") {
 			playWave(1);
 			window.setTimeout(function(){
-				window.location.reload();
+				generateMaze({x:8, y:8}, 8);
 			}, 500);
 			return;
 		}
 		playWave(2);
-		paintMaze();
 	}
 }
 
@@ -350,9 +349,8 @@ window.onload = function() {
 	canvas = document.getElementById("MVLM_canvas");
 	canvas.width = w;
 	canvas.height = h;
-	generateMaze({x:9, y:8}, 8);
+	generateMaze({x:8, y:8}, 8);
 	paintPrep(canvas);
-	paintMaze();
 	
 	document.onkeypress = keypress;
 	

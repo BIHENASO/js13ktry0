@@ -273,10 +273,10 @@ function paintMaze() {
 	paintPlayer(g, x, y-2*step, 4*step, 4*step, border);
 };
 
-function keypress(event) {
+function keyup(event) {
 	audioContext.resume();
 	var flag = false;
-	if (event.key === "a") {
+	if (event.keyCode === 65 || event.keyCode === 37) {
 		if (maze[player.x][player.y-1]) {
 			if (maze[player.x][player.y-1].control === "404" || maze[player.x][player.y-1].control === "BL") {
 				maze[player.x][player.y-1].control = "BL";
@@ -286,7 +286,7 @@ function keypress(event) {
 				flag = true;
 			}
 		}
-	} else if (event.key === "d") {
+	} else if (event.keyCode === 68 || event.keyCode === 39) {
 		if (maze[player.x][player.y+1]) {
 			if (maze[player.x][player.y+1].control === "404" || maze[player.x][player.y+1].control === "BL") {
 				maze[player.x][player.y+1].control = "BL";
@@ -296,7 +296,7 @@ function keypress(event) {
 				flag = true;
 			}
 		}
-	} else if (event.key === "w") {
+	} else if (event.keyCode === 87 || event.keyCode === 38) {
 		if (maze[player.x-1]) {
 			if (maze[player.x-1][player.y].control === "404" || maze[player.x-1][player.y].control === "BL") {
 				maze[player.x-1][player.y].control = "BL";
@@ -306,7 +306,7 @@ function keypress(event) {
 				flag = true;
 			}
 		}
-	} else if (event.key === "s") {
+	} else if (event.keyCode === 83 || event.keyCode === 40) {
 		if (maze[player.x+1]) {
 			if (maze[player.x+1][player.y].control === "404" || maze[player.x+1][player.y].control === "BL") {
 				maze[player.x+1][player.y].control = "BL";
@@ -352,7 +352,14 @@ window.onload = function() {
 	generateMaze({x:8, y:8}, 8);
 	paintPrep(canvas);
 	
-	document.onkeypress = keypress;
+	document.onkeyup = keyup;
+	window.onresize = function() {
+		w = window.innerWidth;
+		h = window.innerHeight;
+		canvas.width = w;
+		canvas.height = h;
+		paintPrep(canvas);
+	};
 	
 	window.requestAnimationFrame(animate);
-}
+};

@@ -283,7 +283,6 @@ function restart() {
 function keyup(event) {
 	audioContext.resume();
 	var flag = false;
-	console.log(event.keyCode);
 	if (event.keyCode === 65 || event.keyCode === 37) {
 		if (maze[player.x][player.y-1]) {
 			if (maze[player.x][player.y-1].control === "404" || maze[player.x][player.y-1].control === "BL") {

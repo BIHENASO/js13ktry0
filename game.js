@@ -3,6 +3,7 @@ var h = window.innerHeight;
 
 var maze;
 var player;
+var diff = 6;
 
 var lastFrame = Date.now();
 
@@ -273,6 +274,12 @@ function paintMaze() {
 	paintPlayer(g, x, y-2*step, 4*step, 4*step, border);
 };
 
+function restart() {
+	window.setTimeout(function(){
+		generateMaze({x:diff, y:diff}, diff);
+	}, 500);
+}
+
 function keyup(event) {
 	audioContext.resume();
 	var flag = false;
@@ -316,19 +323,22 @@ function keyup(event) {
 				flag = true;
 			}
 		}
-	} else if (event.key === "r") {
+	} else if (event.keyCode === 82) {
+		playWave(0);
+		restart();
+	} else if (event.keyCode >= 51 && event.keyCode <= 57) {
+		diff = event.keyCode - 48;
 		playWave(0);
 		window.setTimeout(function(){
-			generateMaze({x:8, y:8}, 8);
+			generateMaze({x:diff, y:diff}, diff);
+			paintPrep(canvas);
 		}, 500);
 	}
 	if (flag) {
 		var pos = maze[player.x][player.y];
 		if (pos.control === "goal") {
 			playWave(1);
-			window.setTimeout(function(){
-				generateMaze({x:8, y:8}, 8);
-			}, 500);
+			restart();
 			return;
 		}
 		player.x = pos.x;
@@ -336,30 +346,30 @@ function keyup(event) {
 		var pos = maze[player.x][player.y];
 		if (pos.control === "goal") {
 			playWave(1);
-			window.setTimeout(function(){
-				generateMaze({x:8, y:8}, 8);
-			}, 500);
+			restart();
 			return;
 		}
 		playWave(2);
 	}
 }
 
+function resize() {
+	w = window.innerWidth;
+	h = window.innerHeight;
+	canvas.width = w;
+	canvas.height = h;
+	paintPrep(canvas);
+};
+
 window.onload = function() {
 	canvas = document.getElementById("MVLM_canvas");
 	canvas.width = w;
 	canvas.height = h;
-	generateMaze({x:8, y:8}, 8);
+	generateMaze({x:diff, y:diff}, diff);
 	paintPrep(canvas);
 	
 	document.onkeyup = keyup;
-	window.onresize = function() {
-		w = window.innerWidth;
-		h = window.innerHeight;
-		canvas.width = w;
-		canvas.height = h;
-		paintPrep(canvas);
-	};
+	window.onresize = resize;
 	
 	window.requestAnimationFrame(animate);
 };

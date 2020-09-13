@@ -3,7 +3,7 @@ var h = window.innerHeight;
 
 var maze;
 var player;
-var diff = 6;
+var difficulty = 6; // Default difficulty / maze size
 
 var lastFrame = Date.now();
 
@@ -57,6 +57,7 @@ function generateMaze( size, difficulty) {
 	
 	var goal = {x: Math.floor(Math.random()*size.x), y: Math.floor(Math.random()*size.y)};
 	maze[goal.x][goal.y].control = "goal";
+	// Generate a path of length difficulty in reverse, from the goal to the starting position of the player.
 	var prev = goal;
 	var cur;
 	for (var i = 0; i < difficulty; i++) {
@@ -97,6 +98,7 @@ function generateMaze( size, difficulty) {
 	}
 	player = prev;
 	
+	// Fill the rest randomly, including 404 nodes
 	for (var i = 0; i < maze.length; i++) {
 		for (var j = 0; j < maze[0].length; j++) {
 			if (!maze[i][j].control) {
@@ -276,12 +278,15 @@ function paintMaze() {
 
 function restart() {
 	window.setTimeout(function(){
-		generateMaze({x:diff, y:diff}, diff);
+		generateMaze({x:difficulty, y:difficulty}, difficulty);
 	}, 500);
 }
 
 function keyup(event) {
+	// Audio cannot start before user input due to browser constraints
 	audioContext.resume();
+	
+	// Movement : WASD / Arrow Keys
 	var flag = false;
 	if (event.keyCode === 65 || event.keyCode === 37) {
 		if (maze[player.x][player.y-1]) {
@@ -323,14 +328,16 @@ function keyup(event) {
 				flag = true;
 			}
 		}
+	// Restart : R
 	} else if (event.keyCode === 82) {
 		playWave(0);
 		restart();
+	// Set difficulty : 3-9
 	} else if (event.keyCode >= 51 && event.keyCode <= 57 || event.keyCode >= 99 && event.keyCode <= 105) {
-		diff = event.keyCode % 48;
+		difficulty = event.keyCode % 48;
 		playWave(0);
 		window.setTimeout(function(){
-			generateMaze({x:diff, y:diff}, diff);
+			generateMaze({x:difficulty, y:difficulty}, difficulty);
 			paintPrep(canvas);
 		}, 500);
 	}
@@ -365,7 +372,7 @@ window.onload = function() {
 	canvas = document.getElementById("MVLM_canvas");
 	canvas.width = w;
 	canvas.height = h;
-	generateMaze({x:diff, y:diff}, diff);
+	generateMaze({x:difficulty, y:difficulty}, difficulty);
 	paintPrep(canvas);
 	
 	document.onkeyup = keyup;
